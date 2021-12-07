@@ -1,0 +1,128 @@
+https://github.com/Slurmio/school-dev-k8s/tree/main/practice
+
+Создание Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <ИМЯ Deploy>
+  labels:
+    app: <APP Deploy>
+spec:
+  replicas: <КОЛ-ВО РЕПЛИК>
+  selector:
+    matchLabels:
+      app: <APP Pods> #выбирает все поды, у которых labels app равен <APP Pods>
+  template:
+    metadata:
+      labels:
+        app: <APP Pods>
+    spec:
+      containers:
+      - name : <ИМЯ Pods>
+        image: <ИМЯ образа Docker>
+        ports:
+        - containerPort: <НОМЕР ПОРТА в Pods>
+…
+
+Создание Service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: <ИМЯ Service >
+  labels:
+     app: <APP Service>
+spec:
+  selector:
+    app: <APP Pods>
+  ports:
+    - name: <ИМЯ Pods>
+      protocol: <ПРОТОКОЛ - TCP или UDP>
+      port: <НОМЕР ПОРТА в Pods>
+      targetPort: <НОМЕР ПОРТА в Pods>
+  type: < ТИП СЕРВИСА>
+...
+
+app: <APP Pods> - метка, указанная в шаблоне Deployment
+<ПРОТОКОЛ> - TCP, UDP 
+< ТИП СЕРВИСА> - ClusterIP (default), NodePort, LoadBalanser (работает только в облаке)
+ 
+
+
+
+
+
+
+https://labs.play-with-k8s.com
+
+kubectl create deployment nginx --image nginx
+kubectl scale deployments nginx --replicas 2
+
+kubectl expose deployment nginx --type=NodePort --port=80
+
+
+https://infoit.com.ua/linux/kak-nastroit-nginx-ingress-controller-v-kubernetes/
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-hosts
+
+spec:
+  rules:
+  - host: www.adv-it.net
+    http:
+      paths:
+        - backend:
+           serviceName: main
+           servicePort: 80
+
+  - host: web1.adv-it.net
+    http:
+      paths:
+        - backend:
+           serviceName: web1
+           servicePort: 80
+
+  - host: web2.adv-it.net
+    http:
+      paths:
+        - backend:
+           serviceName: web2
+           servicePort: 80
+
+  - host: cat.adv-it.net
+    http:
+      paths:
+        - backend:
+           serviceName: tomcat
+           servicePort: 8080
+
+
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-paths
+
+spec:
+  rules:
+  - host: www.adv-it.net
+    http:
+      paths:
+      - path: "/page1"
+        backend:
+          serviceName: webx
+          servicePort: 80
+
+      - path: "/page2"
+        backend:
+          serviceName: webx
+          servicePort: 80
+
+      - path: "/page3"
+        backend:
+          serviceName: webx
+          servicePort: 80
