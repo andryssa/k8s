@@ -1,0 +1,13 @@
+sudo apt-get install ca-certificates curl gnupg lsb-release
+sudo kubeadm join 172.16.100.62:6443 --token 7mcuat.s36v7y91iv7yp48f --discovery-token-ca-cert-hash sha256:58bbb58d720b8005325f7af3d542d5e88601bdc76a63e523da869a64c95e893c
+
+sudo kubeadm join 172.16.100.62:6443 --token tta645.fpk8od3ydordyjmp --discovery-token-ca-cert-hash sha256:7118a7373dbfe55beb30904169188cec248188d826d1a809c81252562d74dfb2
+
+
+kubectl taint nodes master1 node-role.kubernetes.io/master-   -если сдох slave 
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+
+Статический ip настройка
+https://prowebmastering.ru/ubuntu20-04-static-ip.html 
