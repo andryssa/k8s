@@ -1,0 +1,87 @@
+PersistentVolume – непосредственно система хранения, раздел на жёстком диске
+
+PersistentVolume могут быть созданы двумя способами – динамически (рекомендуемый способ), и статически.
+
+При использовании NFS Server со статическим созданием PersistentVolume
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: <ИМЯ PersistentVolume>
+spec:
+  capacity:
+    storage: <РАЗМЕР PersistentVolume>
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany #тип использования диска
+  persistentVolumeReclaimPolicy: Recycle #что делать с диском после удаления
+  storageClassName: <ИМЯ storageClass>
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: <ПУТЬ папки NFS>
+    server: <АДРЕС сервера NFS>
+…
+
+
+
+ 
+PersistentVolumeClaim – запрос от пользователя на использование такого диска (PersistentVolume)
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: <ИМЯ PersistentVolumeClaim>
+spec:
+  storageClassName: <ИМЯ storageClass> #должно быть одинаково с PersistentVolume
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: <РАЗМЕР PersistentVolumeClaim>
+…
+ 
+Создание Deployment с PersistentVolumeClaim
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: <ИМЯ Deploy>
+ labels:
+  app: <APP Pods>
+spec:
+ replicas: <КОЛ-ВО РЕПЛИК>
+ selector:
+  matchLabels:
+   app: <APP Pods> #выбирает все поды, у которых labels app равен <APP Pods>
+ template:
+  metadata:
+   labels:
+    app: <APP Pods>
+  spec:
+   volumes:
+   - name: <ИМЯ volumes>
+     persistentVolumeClaim:
+      claimName: <ИМЯ PersistentVolumeClaim>
+   containers:
+   - name : <ИМЯ Pods>
+     image: <ИМЯ образа Docker>
+     ports:
+      - containerPort: <НОМЕР ПОРТА в Pods> (3306 mariadb)
+(    env:				)
+(      - name: MARIADB_ROOT_PASSWORD    ) - машка
+(        value: "P@ssw0rd"              )
+[    env:				]
+[     - name: PMA_HOST			] - phpmyadmin
+[       value: ip машки			]
+     volumeMounts:
+      - mountPath: "<ПАПКА внутри Pods>"(для машки /var/lib/mysql)
+					(для wordpress /var/www/html)
+
+        name: <ИМЯ volumes>
+…
+ 
