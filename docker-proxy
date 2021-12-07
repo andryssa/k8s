@@ -1,0 +1,32 @@
+Настройка proxy pass для сервера 
+
+server {
+  listen 80;
+  server_name phpmyadmin.site.ru;
+  location / {
+      proxy_pass http://localhost:8888/;
+  }
+}
+server {
+  listen 80;
+    server_name nextcloud.site.ru;
+ 
+  location / {
+      proxy_pass http://localhost:8080/;
+  }
+}
+server {
+  listen 80;
+ 
+  server_name www.site.ru;
+ 
+  location / {
+      proxy_pass http://localhost:8081/;
+  }
+}
+
+
+Создание базы данных через mariadb
+>>
+CREATE DATABASE wordpress DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+
