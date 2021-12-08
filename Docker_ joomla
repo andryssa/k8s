@@ -1,0 +1,8 @@
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=P@ssw0rd -d --network net1 --restart always  mysql
+docker run -p 8080:8080 -e ADMINER_DEFAULT_SERVER=mysql  --name adminer --network net1 --restart always -d adminer
+joomla
+docker run -p 8080:80  --name joomla --network net1 --restart always -e JOOMLA_DB_HOST=mysql -e JOOMLA_DB_USER=root -e JOOMLA_DB_PASSWORD=P@ssw0rd -d joomla
+
+-e JOOMLA_DB_HOST=mysql -e JOOMLA_DB_USER=root -e JOOMLA_DB_PASSWORD=P@ssw0rd
+
+123456789toor
