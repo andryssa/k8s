@@ -1,0 +1,37 @@
+---
+- hosts: all
+  tasks:
+    - name: create network
+      community.docker.docker_network:
+        name: NET
+    - name: mariadb
+      community.docker.docker_container:
+        name: mariadb
+        image: mariadb:10.5
+        state: started
+        restart: yes
+        networks:
+          - name: NET
+        env:
+          MARIADB_ROOT_PASSWORD: toor
+          MARIADB_DATABASE: wordpress
+          MARIADB_USER: user
+          MARIADB_PASSWORD: P@ssw0rd
+    - name: wordpress
+      community.docker.docker_container:
+        name: wordpress
+        image: wordpress
+        state: started
+        restart: yes
+        networks:
+          - name: NET
+        ports:
+          - 8080:80
+        volumes:
+          - /var/www/html/wordpress:/var/www/html
+        env:
+          WORDPRESS_DB_HOST: mariadb
+          WORDPRESS_DB_USER: user
+          WORDPRESS_DB_PASSWORD: P@ssw0rd
+          WORDPRESS_DB_NAME: wordpress
+

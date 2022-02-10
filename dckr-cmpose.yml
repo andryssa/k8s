@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+    - name: install pip
+      become: yes
+      package: 
+        name: python3-pip
+        state: present
+    - name: upgrade pip
+      become: yes
+      pip:
+        name: pip
+        extra_args: --upgrade
+        executable: pip3
+   
+     
+

@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: docker group
+      user:
+        name: "{{ansible_user}}"
+        group: docker
