@@ -1,0 +1,6 @@
+kubeadm token create --print-join-command
+kubeadm token create --print-join-command > путь/123.sh
+подкоректировать файл
+chmod +x 123.sh
+scp 123.sh user@...:/путь куда
+./123.sh
