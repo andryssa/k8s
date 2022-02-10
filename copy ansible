@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: copy file
+      ansible.builtin.copy:
+        src: /docker/docker-compose.yml
+        dest: /etc/docker-compose.yml
