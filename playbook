@@ -1,0 +1,52 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: disable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: no
+      when: ansible_distribution == "CentOS" 
+    - name: disable Selinux
+      ansible.posix.selinux:
+        state: disabled
+      when: ansible_distribution == "CentOS"
+    - name: install prerequisites Ubuntu
+      dnf:
+        name: yum-utils
+        state: present
+      when: ansible_distribution == "CentOS"
+    - name: add docker repo CentOS
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      when: ansible_distribution == "CentOS"
+    - name: install docker CE CentOS
+      dnf:
+        name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+      when: ansible_distribution == "CentOS"
+    - name: install prerequisites CentOS
+      apt:
+        name: ['ca-certificates', 'curl', 'gnupg', 'lsb-release']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: add docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: add docker API
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: install docker CE
+      apt:
+        name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: install docker-compose
+      shell: sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    - name: chmod +X
+      shell: sudo chmod +x /usr/local/bin/docker-compose
