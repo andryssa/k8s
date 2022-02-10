@@ -1,0 +1,83 @@
+Настройка центра сертификации
+Команда	Описание
+dnf install openssl*	Устанавливаем openssl*
+vim /etc/pki/tls/openssl.cnf	Редактируем конфигурационный файл
+…
+[ CA_default ]
+
+dir = /etc/pki/CA
+…
+policy = policy_anything
+…	
+
+
+Смотрим путь корневой папки CA
+
+Меняем policy_match на policy_anything
+reboot	Перегружаемся
+cd /etc/pki/CA	Переходим в папку /etc/ca/
+touch index.txt	Создаем файл index.txt
+touch serial	Создаем файл serial
+echo “01”  >  serial	Записываем 01 в serial
+openssl genrsa -out private/cakey.pem	Создаем корневой ключ
+openssl req -new -key private/cakey.pem -out cacert.csr	Создаем запрос на корневой сертификат
+
+Country Name (2 letter code) [AU]:RU
+State or Province Name (full name) [Some-State]: .
+Locality Name (eg, city) []: .
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:WorldSkills Russia
+Organizational Unit Name (eg, section) []: .
+Common Name (e.g. server FQDN or YOUR name) []:WSR CA
+Email Address []: .
+
+A challenge password []: .
+An optional company name []: .
+
+openssl x509 -req -in cacert.csr -signkey private/cakey.pem -out cacert.pem	Создаем корневой сертификат
+openssl ca	Проверка CA (должны увидеть
+Using configuration from /etc/pki/tls/openssl.cnf)
+
+Использование центра сертификации
+Команда	Описание
+cd newcerts	Переходим в папку, где будем создавать сертификаты
+openssl genrsa -out www.key	Генерируем ключ для сайта
+openssl req -new -key www.key -out www.csr	Создаем запрос на сертификат для сайта
+
+Country Name (2 letter code) [AU]:RU
+State or Province Name (full name) [Some-State]: .
+Locality Name (eg, city) []: .
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:WorldSkills Russia
+Organizational Unit Name (eg, section) []: .
+Common Name (e.g. server FQDN or YOUR name) []:www.company.ru
+Email Address []: .
+
+openssl ca -in www.csr -out www.crt	Выдаем сертификат нашим корневым сертификатом
+cat /etc/ca/index.txt	Проверяем, что появилась запись
+Настройка NGINX
+Команда	Описание
+dnf install nginx	Устанавливаем NGINX
+touch /etc/nginx/conf.d/task.conf	Создаем конфигурационный файл
+
+server {
+    listen 80;
+    server_name www.company.ru;
+    return 301 https:// www.company.ru$request_uri;
+}
+
+server {
+    listen 443;
+    server_name www.company.ru;
+    ssl on;
+    ssl_certificate /etc/pki/CA/newcerts/www.crt;
+    ssl_certificate_key /etc/pki/CA/newcerts/www.key;
+    location / {
+        proxy_pass 192.168.20.10:8088;
+    }
+}
+
+systemctl start nginx	Запускаем NGINX
+systemctl status nginx	Смотрим статус NGINX
+systemctl enable nginx	Добавляем NGINX в автозагрузку
+	
+
+
