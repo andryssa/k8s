@@ -1,0 +1,74 @@
+https://spec-zone.ru/ansible~2.10/collections/ansible/builtin/dnf_module
+
+Установка Ansible CentOS
+
+dnf install python3
+dnf install epel-release
+dnf install ansible
+
+Создание инвентаря
+
+vim /etc/ansible/hosts
+
+<IP сервера>	ansible_user=<ИМЯ ПОЛЬЗОВАТЕЛЯ на сервере>
+
+Проверка подключения через Ansible
+
+ansible all -m ping --ask-pass
+
+Вводим пароль и должны получить
+
+<IP сервера> | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+Создаем безпарольное подключение
+
+mkdir /opt/keys
+ssh-keygen -f /opt/keys/<ИМЯ КЛЮЧА>.key
+ssh-copy-id -i /opt/keys/<ИМЯ КЛЮЧА>.key.pub <ИМЯ ПОЛЬЗОВАТЕЛЯ на сервере>@<IP сервера>
+
+Добавляение ssh ключа в инвентарь
+
+vim /etc/ansible/hosts
+
+[Ubuntu]
+<IP сервера>	ansible_user=<ИМЯ ПОЛЬЗОВАТЕЛЯ на сервере> ansible_ssh_private_key_file=/opt/keys/<ИМЯ КЛЮЧА>.key
+
+[CentOS]
+<IP сервера>	ansible_user=<ИМЯ ПОЛЬЗОВАТЕЛЯ на сервере> ansible_ssh_private_key_file=/opt/keys/<ИМЯ КЛЮЧА>.key
+
+Проверка подключения через Ansible по ключу, без пароля
+
+ansible all -m ping
+
+должны получить
+
+<IP сервера> | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+
+На управляем сервере на Ubuntu
+
+sudo visudo
+
+%sudo	ALL=(ALL:ALL) NOPASSWD:ALL
+
+
+На управляем сервере на CentOS
+
+visudo
+
+%wheel	ALL=(ALL:ALL) NOPASSWD:ALL
+
+
+
