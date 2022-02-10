@@ -1,0 +1,290 @@
+---
+- hosts: centos
+  become: yes
+  tasks:
+    - name: install apache
+      dnf:
+        name: httpd
+        state: latest
+    - name: start apache
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: disable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: no
+...
+
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+    - name: install apache
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+    - name: restart apache
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: yes
+...     
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install apache Ubuntu
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: install apache Centos
+      dnf:
+        name: httpd
+        state: latest
+      when: ansible_distribution == "CentOS"
+    - name: restart apache Ubuntu
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: restart apache Centos
+      ansible.builtin.systemd:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+    - name: stop CentOS
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      when: ansible_distribution == "CentOS"
+
+# Use public servers from the pool.ntp.org project.
+# Please consider joining the pool (http://www.pool.ntp.org/join.html).
+pool 172.16.100.63 iburst
+local stratum 10
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/drift
+
+# Allow the system clock to be stepped in the first three updates
+# if its offset is larger than 1 second.
+makestep 1.0 3
+
+# Enable kernel synchronization of the real-time clock (RTC).
+rtcsync
+
+# Enable hardware timestamping on all interfaces that support it.
+#hwtimestamp *
+
+# Increase the minimum number of selectable sources required to adjust
+# the system clock.
+#minsources 2
+
+# Allow NTP client access from local network.
+allow 172.16.100.0/24
+
+# Serve time even if not synchronized to a time source.
+#local stratum 10
+
+# Specify file containing keys for NTP authentication.
+keyfile /etc/chrony.keys
+
+# Get TAI-UTC offset and leap seconds from the system tz database.
+leapsectz right/UTC
+
+# Specify directory for log files.
+logdir /var/log/chrony
+
+# Select which information is logged.
+#log measurements statistics tracking
+
+---
+- hosts: centos
+  become: yes
+  tasks:
+    - name: copy file CentOS
+      ansible.builtin.copy:
+        src: /project/chrony.conf       
+        dest: /etc/chrony.conf
+      
+
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: copy file
+      ansible.builtin.copy:
+        src: /project/index.html
+        dest: /var/www/html/index.html
+    - name: copy file
+      ansible.builtin.copy:
+        src: /project/index.php
+        dest: /var/www/html/index.php
+
+
+HELLO!!
+
+<?php
+phpinfo();
+?>
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install apache CentOS
+      dnf:
+        name: httpd
+        state: latest
+      when: ansible_distribution == "CentOS"
+    - name: install apache Ubuntu
+      apt:
+        name: apache2
+      when: ansible_distribution == "Ubuntu"
+    - name: install mysql
+      package:
+        name:
+          - mysql-server
+        state: present
+    - name: install php Ubuntu
+      package:
+        name: 
+          - php7.4
+          - libapache2-mod-php7.4
+          - php7.4-mysql
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: install php Centos
+      package:
+        name:
+          - php
+          - php-cli
+          - php-common
+      when: ansible_distribution == "CentOS"
+
+
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install pymysql
+      pip:
+        name:
+          - PyMySQL
+          - PyMySQL[rsa]
+          - PyMySQL[ed25519]
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: root password
+      community.mysql.mysql_user:
+        name: root
+        password: toor
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: ansible_distribution == "Ubuntu"
+    - name: root password CentOS
+      community.mysql.mysql_user:
+        name: root
+        password: toor
+        login_unix_socket: /var/lib/mysql/mysql.sock
+      when: ansible_distribution == "CentOS"
+
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: copy file CentOS
+      ansible.builtin.copy:
+        src: /project/chrony.conf
+        dest: /etc/chrony.conf
+      when: ansible_distribution == "CentOS"
+    - name: restart chrony
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+    - name: install chrony for Ubuntu
+      apt:
+        name: chrony
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+    - name: copy file Ubuntu
+      ansible.builtin.copy:
+        src: /project/chrony.conf
+        dest: /etc/chrony/chrony.conf
+      when: ansible_distribution == "Ubuntu"
+    - name: restart chrony
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: disable firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: no
+      when: ansible_distribution == "CentOS" 
+    - name: disable Selinux
+      ansible.posix.selinux:
+        state: disabled
+      when: ansible_distribution == "CentOS"
+    - name: install prerequisites Ubuntu
+      dnf:
+        name: yum-utils
+        state: present
+      when: ansible_distribution == "CentOS"
+    - name: add docker repo CentOS
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      when: ansible_distribution == "CentOS"
+    - name: install docker CE CentOS
+      dnf:
+        name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+      when: ansible_distribution == "CentOS"
+    - name: install prerequisites CentOS
+      apt:
+        name: ['ca-certificates', 'curl', 'gnupg', 'lsb-release']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: add docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: add docker API
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: install docker CE
+      apt:
+        name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: install docker-compose 
+      pip:
+        name: docker-compose
+        executable: pip3
+      
