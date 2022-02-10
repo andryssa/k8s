@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: copy file CentOS
+      ansible.builtin.copy:
+        src: /project/chrony.conf
+        dest: /etc/chrony.conf
+      when: ansible_distribution == "CentOS"
+    - name: restart chrony
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+    - name: install chrony for Ubuntu
+      apt:
+        name: chrony
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+    - name: copy file Ubuntu
+      ansible.builtin.copy:
+        src: /project/chrony.conf
+        dest: /etc/chrony/chrony.conf
+      when: ansible_distribution == "Ubuntu"
+    - name: restart chrony
+      ansible.builtin.service:
+        name: chronyd
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"

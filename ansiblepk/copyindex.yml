@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: copy file
+      ansible.builtin.copy:
+        src: /project/index.html
+        dest: /var/www/html/index.html
+    - name: copy file
+      ansible.builtin.copy:
+        src: /project/index.php
+        dest: /var/www/html/index.php
+

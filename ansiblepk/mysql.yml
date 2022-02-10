@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install pymysql
+      pip:
+        name:
+          - PyMySQL
+          - PyMySQL[rsa]
+          - PyMySQL[ed25519]

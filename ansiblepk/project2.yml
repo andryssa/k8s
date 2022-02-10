@@ -1,0 +1,33 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install apache Ubuntu
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: install apache Centos
+      dnf:
+        name: httpd
+        state: latest
+      when: ansible_distribution == "CentOS"
+    - name: restart apache Ubuntu
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: restart apache Centos
+      ansible.builtin.systemd:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
+    - name: stop CentOS
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+      when: ansible_distribution == "CentOS"

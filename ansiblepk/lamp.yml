@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: install apache CentOS
+      dnf:
+        name: httpd
+        state: latest
+      when: ansible_distribution == "CentOS"
+    - name: install apache Ubuntu
+      apt:
+        name: apache2
+      when: ansible_distribution == "Ubuntu"
+    - name: install mysql
+      package:
+        name:
+          - mysql-server
+        state: present
+    - name: install php Ubuntu
+      package:
+        name: 
+          - php7.4
+          - libapache2-mod-php7.4
+          - php7.4-mysql
+        state: present
+      when: ansible_distribution == "Ubuntu"
+    - name: install php Centos
+      package:
+        name:
+          - php
+          - php-cli
+          - php-common
+      when: ansible_distribution == "CentOS"
+
+

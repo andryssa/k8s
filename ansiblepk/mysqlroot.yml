@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: root password
+      community.mysql.mysql_user:
+        name: root
+        password: toor
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: ansible_distribution == "Ubuntu"
+    - name: root password CentOS
+      community.mysql.mysql_user:
+        name: root
+        password: toor
+        login_unix_socket: /var/lib/mysql/mysql.sock
+      when: ansible_distribution == "CentOS"
+

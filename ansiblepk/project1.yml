@@ -1,0 +1,15 @@
+---
+- hosts: ubuntu
+  become: yes
+  tasks:
+    - name: install apache
+      apt:
+        name: apache2
+        state: latest
+        update_cache: yes
+    - name: restart apache
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+        enabled: yes
+...     
