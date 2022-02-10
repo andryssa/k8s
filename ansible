@@ -70,5 +70,9 @@ visudo
 
 %wheel	ALL=(ALL:ALL) NOPASSWD:ALL
 
+absent - удалить
+present - поставить
+ 
+when: ansible_distribution == ""
 
 
