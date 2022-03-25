@@ -1,0 +1,52 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+На мастере
+
+docker swarm init - настрйока мастера кластера docker swarm
+docker swarm join-token worker - показать токен для подключения
+
+docker swarm join --token SWMTKN-1-06fcjqkaoog1ufvn7jm327jj3brmskkdb8pwinu353js3rrgzt-6ajsrs8bhv8rvcxess7ae32b1 172.16.100.62:2377
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+docker node ls показать параметры кластера
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+docker service create --name=visualizer --publish=8088:8080/tcp --constraint=node.role==manager --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock dockersamples/visualizer
+--name= ... имя сервиса
+--publish= (-p тоже самое)
+--constraint=node.role==manager ---- будет исполнятся только на manager ( главный ) 
+--mount=type=bind,  -----   (тип папка)
+src= (откуда)
+dst= (куда)
+dockersamples/visualizer (путь файл visualizer)
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+																						
+docker run --detach --name some-mariadb --env MARIADB_USER=example-user --env MARIADB_PASSWORD=my_cool_secret --env MARIADB_ROOT_PASSWORD=my-secret-pw  mariadb:latest           
+
+docker service create --name mariadb --network net1 --env MARIADB_ROOT_PASSWORD=P@ssw0rd  mariadb:10.5
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+docker service create --name phpmyadmin --network net2 -e PMA_HOST=mysql -p 8080:80 --replicas=1 phpmyadmin
+
+--replicas=3 ( разделение потоков на реплики )
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+docker network create --driver overlay net1      ----- для всех контейнеров нужна сеть overlay
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+docker service update --replicas=1 phpmyadmin
+
+docker service create --name wordpress -d --mount 'type=volume,source=wordpress,target=/var/www/html,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:/nfs/swarm/wordpress,"volume-opt=o=addr=172.16.100.43,rw,nfsvers=4,async"' --network net2 --replicas 2 wordpress
+
+
+docker service create -d --name mariadb --mount 'type=volume,source=mariadb,target=/var/lib/mysql,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:/mnt/nfs/mariadb,"volume-opt=o=addr=172.16.100.89,rw,nfsvers=4,async"' --network net1 -e MARIADB_ROOT_PASSWORD=P@ssw0rd --replicas 1  mariadb:10.5
+
+
+MYSQL_ROOT_PASSWORD
+
+
+docker service create -d --name mysql --mount 'type=volume,source=mysql,target=/var/lib/mysql,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:/nfs/mariadb,"volume-opt=o=addr=172.16.100.89,rw,nfsvers=4,async"' --network net1 -e MYSQL_ROOT_PASSWORD=P@ssw0rd --replicas 1  mariadb:10.5
+
+
+docker service create --name joomla -e JOOMLA_DB_HOST=mysql -e JOOMLA_DB_USER=root -e JOOMLA_DB_PASSWORD=P@ssw0rd --network net2 --replicas 1 -d --mount 'type=volume,source=joomla,target=/var/www/html,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:/nfs/joomla,"volume-opt=o=addr=172.16.100.84,rw,nfsvers=4,async"' -p 8081:80 joomla
+
+docker service create --name myadmin -d -e PMA_ARBITRARY=1 -p 8090:80 --network net1 --replicas=1 phpmyadmin
+
+docker service create --name adminer -d  -p 8090:8080 --network net2 --replicas=1 adminer
