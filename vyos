@@ -1,0 +1,35 @@
+set interface ethernet eth0 address dhcp   ---   адресация интерфейса
+set interface ethernet eth0 address 192.168.250.1/24
+
+set description "WAN"   ---   описание интерфейса
+
+set system host-name R1   ---   хостнаме
+set system domain-name company.lab   ---   домен
+
+set nat source rule 100 outbound-interface 'eth0'   ---   внешний интерфейс
+set nat source rule 100 source address '192.168.0.0/24'   ---   внутренняя сеть (LAN)
+set nat source rule 100 translation address 'masquerade'
+
+set service ssh port 22   ---   протокол sshv2
+
+set system time-zone Europe/Moscow   ---   временная зона
+
+set system ntp server 0.ru.pool.ntp.org   ---   NTP server
+
+set system name-server 192.168.250.254   ---   ip DNS server
+
+set service dhcp-server shared-network-name LAN
+set service dhcp-server shared-network-name LAN subnet 192.168.250.0/24 default-router '192.168.250.1'
+set service dhcp-server shared-network-name LAN subnet 192.168.250.0/24 name-server 192.168.250.254
+set service dhcp-server shared-network-name LAN subnet 192.168.250.0/24 domain-name company.lab
+set service dhcp-server shared-network-name LAN subnet 192.168.250.0/24 range 1 start 192.168.250.101
+set service dhcp-server shared-network-name LAN subnet 192.168.250.0/24 range 1 stop 192.168.250.204
+ 
+commit
+
+save
+
+
+configure  -режим конфигурации
+show configuration -- просмотр конфига
+
